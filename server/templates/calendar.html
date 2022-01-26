@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Calendar</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css"
+          integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+
+    <style>
+        .btn {
+            transition: none!important;
+            outline: none!important;
+            box-shadow: none;
+        }
+        * {
+            background-color: #01161E;
+            trasparency: 0;
+            color: #ffffff;
+        }
+        h3 {
+            text-align: center;
+        }
+    </style>
+
+</head>
+<body style="background-color: #01161E;" id="main_element">
+<div class="card" style="background-color: #01161E;">
+    <div class="d-flex justify-content-between align-items-center" style="background-color: #01161E;">
+        <button class="btn btn-outline-primary border-white text-white" id="previous" onclick="previous()"><</button>
+    <h3 class="card-header" id="monthAndYear"></h3>
+        <button class="btn btn-outline-primary border-white text-white" id="next" onclick="next()">></button>
+    </div>
+    <table class="table table-bordered" id="calendar">
+        <thead bgcolor=#01161E;>
+        <tr id="calendar-head"></tr>
+        </thead>
+        <tbody id="calendar-body" style="background-color: #01161E;"></tbody>
+    </table>
+</div>
+<script>
+let today = new Date();
+let currentMonth = today.getMonth();
+let currentYear = today.getFullYear();
+
+const mesiIt = [
+	"Gennaio",
+	"Febbraio",
+	"Marzo",
+	"Aprile",
+	"Maggio",
+	"Giugno",
+	"Luglio",
+	"Agosto",
+	"Settembre",
+	"Ottobre",
+	"Novembre",
+	"Dicembre"
+]
+
+
+const mesiEn = [
+	"January",
+	"February",
+	"March",
+	"April",
+	"May",
+	"June",
+	"July",
+	"August",
+	"September",
+	"October",
+	"November",
+	"December"
+]
+
+
+const giorniItMobile = [
+    "L",
+    "M",
+    "M",
+    "G",
+    "V",
+    "S",
+    "D"
+]
+
+
+const giorniEnMobile = [
+    "M",
+    "T",
+    "W",
+    "T",
+    "F",
+    "S",
+    "S"
+]
+
+
+const giorniIt = [
+    "Lun",
+    "Mar",
+    "Mer",
+    "Gio",
+    "Ven",
+    "Sab",
+    "Dom"
+]
+
+
+const giorniEn = [
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat",
+    "Sun"
+]
+
+
+const standardColor = "#01161E"
+const currentColor = "#ffffff20"
+const currentColorUpper = "#ffffff00"
+const eventColor = "#0088A2"
+const hoverColor = "#01313A"
+const warningColor = "#ffff00"
+const errorColor = "#ff0000"
+
+var months = mesiIt;
+var days = giorniIt;
+var currentMonthEvents;
+var hasResponse;
+
+let monthAndYear = document.getElementById("monthAndYear");
+showCalendar(currentMonth, currentYear);
+askLanguage();
+
+function next() {
+    currentYear = (currentMonth === 11) ? currentYear + 1 : currentYear;
+    currentMonth = (currentMonth + 1) % 12;
+    showCalendar(currentMonth, currentYear);
+}
+
+function previous() {
+    currentYear = (currentMonth === 0) ? currentYear - 1 : currentYear;
+    currentMonth = (currentMonth === 0) ? 11 : currentMonth - 1;
+    showCalendar(currentMonth, currentYear);
+}
+
+/*
+function sendMessage(type, content){
+    outMessage = {
+        "type": type,
+        "content": content
+    }
+    try{
+        window.parent.postMessage(outMessage, "*")
+    }
+    catch(error){        
+		console.log("ho ricevuto il seguente errore: " + error)
+		console.log("riprovo tra un attimo")
+        setTimeout(function() { sendMessage(type, content) }, 500)
+    }
+}
+*/
+/*
+function askLanguage(){
+    sendMessage("LANG", "LANG")
+}
+*/
+/*
+function askEvents(){
+    let eventContent = {
+        "year": currentYear,
+        "month": currentMonth
+    }
+    sendMessage("MONTH", eventContent)
+    setTimeout(() => {
+        if (!(hasResponse)){
+            return askEvents()
+        }
+    }, 1000)
+}
+*/
+
+function showCalendar(month, year) {
+    let firstDay = (new Date(year, month)).getDay();
+    firstDay = (firstDay + 6) % 7;
+    let daysInMonth = 32 - new Date(year, month, 32).getDate();
+
+    let tbl = document.getElementById("calendar-body"); // body of the calendar
+    let tbl_head = document.getElementById("calendar-head"); //head of the calendar
+    tbl.style.backgroundColor = standardColor
+
+    // clearing all previous cells
+    tbl.innerHTML = "";
+    tbl_head.innerHTML = "";
+
+    // filing data about month and in the page via DOM.
+    monthAndYear.innerHTML = months[month] + " " + year;
+    monthAndYear.style.backgroundColor = standardColor;
+
+    // creating the cell thread
+    for (let i = 0; i < days.length; i++){
+        let currentWeekDay = document.createElement("th");
+    currentWeekDay.style.width = 100/7 + "%"
+    let weekDayText = document.createTextNode(days[i])
+    currentWeekDay.appendChild(weekDayText)
+    tbl_head.appendChild(currentWeekDay)
+    }
+
+    // creating all cells
+    let date = 1;
+    for (let i = 0; i < 6; i++) {
+        // creates a table row
+        let row = document.createElement("tr");
+
+        //creating individual cells, filing them up with data.
+        for (let j = 0; j < 7; j++) {
+            if (i === 0 && j < firstDay) {
+                let cell = document.createElement("td");
+                cell.style.backgroundColor = standardColor;
+                let cellText = document.createTextNode("");
+                cell.appendChild(cellText);
+                row.appendChild(cell);
+            }
+            else if (date > daysInMonth) {
+                break;
+            }
+            else {
+                let cell = document.createElement("td");
+                cell.setAttribute("id", date + " " + (month+1) + " " + year)
+                cell.setAttribute("data-events", '')
+                cell.style.backgroundColor = standardColor;
+
+                let cellContainer = document.createElement("div")
+                cellContainer.setAttribute("class", "d-flex justify-content-between align-items-center")
+                let cellContainerText = document.createElement("p6")
+
+                if (date < 10){
+                    date = "0" + date
+                }
+
+                let cellText = document.createTextNode(date+" ");
+
+                let square = document.createElement("div")
+                square.setAttribute("id", date + " " + (month+1) + " " + year + " b")
+                square.setAttribute("class", "btn btn-noline-primary pt-2 pb-1 pl-1 pr-2")
+                square.style.backgroundColor = standardColor
+                
+                if (date === today.getDate() && year === today.getFullYear() && month === today.getMonth()) {
+                    cell.style.backgroundColor = currentColor
+                    square.style.backgroundColor = currentColorUpper
+                    cellContainerText.style.backgroundColor = currentColorUpper
+                    cell.addEventListener("mouseout", function() {
+                        cell.style.backgroundColor = currentColor
+                        cellContainerText.style.backgroundColor = currentColorUpper
+                        if (cell.getAttribute("data-event") == null){
+                            square.style.backgroundColor = currentColorUpper
+                        }
+                        else if (cell.getAttribute("data-isSpostato") == "true"){
+                            square.style.backgroundColor = errorColor
+                        }
+                        else if (cell.getAttribute("data-isWarning") == "true"){
+                            square.style.backgroundColor = warningColor
+                        }
+                        else{
+                            square.style.backgroundColor = eventColor
+                        }
+                       
+                    })
+                } // color today's date
+                else{
+                    cell.addEventListener("mouseout", function() {
+                        cell.style.backgroundColor = standardColor
+                        cellContainerText.style.backgroundColor = standardColor
+                        if (cell.getAttribute("data-event") == null){
+                            square.style.backgroundColor = standardColor
+                        }
+                        else if (cell.getAttribute("data-isSpostato") == "true"){
+                            square.style.backgroundColor = errorColor
+                        }
+                        else if (cell.getAttribute("data-isWarning") == "true"){
+                            square.style.backgroundColor = warningColor
+                        }
+                        else{
+                            square.style.backgroundColor = eventColor
+                        }
+                    })
+                }
+
+                cell.addEventListener("mouseover", function() {
+                    cell.style.backgroundColor = hoverColor
+                    cellContainerText.style.backgroundColor = hoverColor
+                    if (cell.getAttribute("data-event") == null){
+                        square.style.backgroundColor = hoverColor
+                    }
+                    else if (cell.getAttribute("data-isSpostato") == "true"){
+                        square.style.backgroundColor = errorColor
+                    }
+                    else if (cell.getAttribute("data-isWarning") == "true"){
+                        square.style.backgroundColor = warningColor
+                    }
+                    else{
+                        square.style.backgroundColor = eventColor
+                    }
+
+                    let eventReturned = currentMonthEvents[cell.getAttribute("id")]
+                    sendMessage("EVENT", eventReturned)
+                })
+
+
+                cellContainerText.appendChild(cellText);
+                cell.appendChild(cellContainerText);
+
+                cell.appendChild(square)
+
+                row.appendChild(cell);
+                date++;
+            }
+        }
+        row.style.backgroundColor = standardColor
+        tbl.appendChild(row); // appending each row into calendar body.
+    }
+    hasResponse = false
+    askEvents()
+}
+/*
+window.onmessage = (event) => {
+    let type = event.data["type"]
+    let content = event.data["content"]
+    if (type === "LANG") {
+        if (content.language === "en"){
+            months = mesiEn
+            if (content.mobile === "Mobile"){
+                days = giorniEnMobile
+            }
+            else{
+                days = giorniEn
+            }
+        }
+        else{
+            months = mesiIt
+            if (content.mobile === "Mobile"){
+                days = giorniItMobile
+            }
+            else{
+                days = giorniIt
+            }
+        }
+        showCalendar(currentMonth, currentYear)
+    }
+    else if (type === "EVENT"){
+        hasResponse = true
+        currentMonthEvents = {}
+        for(let i=0; i<content.length; i++){
+            currentEvent = content[i]
+
+            cellDay = currentEvent.data.getDate() 
+            cellMonth = currentEvent.data.getMonth() + 1
+            cellYear = currentEvent.data.getFullYear()
+            cellId = cellDay + " " + cellMonth + " " + cellYear
+
+            try{
+                currentMonthEvents[cellId].push(currentEvent)
+            }catch{
+                currentMonthEvents[cellId] = [currentEvent]
+            }
+
+            let isSpostato = getSpostato(currentMonthEvents[cellId])
+            let isWarning = getWarning(currentMonthEvents[cellId])
+
+            cell = document.getElementById(cellId)
+            cell.setAttribute("data-isSpostato", isSpostato)
+            cell.setAttribute("data-isWarning", isWarning)
+            cell.setAttribute("data-event", true)
+            if (isSpostato){
+                cell.children[1].style.background = errorColor
+            }
+            else if(isWarning){
+                cell.children[1].style.background = warningColor
+            }
+            else{
+                cell.children[1].style.background = eventColor
+            }
+        }
+    }
+    else{
+        console.log("mi è arrivato un messaggio di tipo " + type)
+        console.log("e di contenuto " + content)
+        console.log("ma non so cosa farmene...")
+    }
+};
+*/
+function getSpostato(events){
+    let isSpostato = true
+    var event;
+    for (event of events){
+        let current = event.isSpostato ? true : false
+        isSpostato = isSpostato && current
+    }
+    return isSpostato
+}
+
+function getWarning(events){
+    let isWarning = false
+    var event;
+    for (event of events){
+        let current = event.isWarning ? true : false
+        isWarning = isWarning || current
+    }
+    return isWarning
+}
+</script>
+
+<!-- Optional JavaScript for bootstrap -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"
+        integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"
+        integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm"
+        crossorigin="anonymous"></script>
+
+
+</body>
+</html>
+
